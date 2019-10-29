@@ -1,10 +1,6 @@
 import React, { Component } from "react";
 import { PageHeader, ListGroup, ListGroupItem } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
-import "@tensorflow/tfjs";
-import * as tf from '@tensorflow/tfjs';
-import * as mobilenet from '@tensorflow-models/mobilenet';
-import * as knnClassifier from '@tensorflow-models/knn-classifier';
 import "./Home.css";
 
 export default class Home extends Component {
@@ -16,29 +12,8 @@ export default class Home extends Component {
             items: []
         };
         this.cam = React.createRef();
-        this.classifier = knnClassifier.create();
     }
 
-    knnLoad = () => {
-        //knnClassifier30.json se comparta de manera semi-estable
-        // se cambio el 9/10/2019 por knnClassifierv4.json
-        //knnClassifierv4.json le falta entrenamiento
-        // se dejará por el momento el knnClassiifier30.json
-        //let tensorObj = require('./knnClassifier30.json')
-        let tensorObj = require('../components/knnClassifier.json');
-        Object.keys(tensorObj).forEach((key) => {
-            console.log(tensorObj[key].length);
-            tensorObj[key] = tf.tensor(tensorObj[key], [Math.floor(tensorObj[key].length / 1000), 1024]);
-        });
-        this.classifier.setClassifierDataset(tensorObj);
-    }
-
-    mobilenetLoad = async () => {
-        console.log('Loading mobilenet..');
-        const net = await mobilenet.load();
-        console.log('Sucessfully Mobilnet model');
-        this.predictions(net);
-    }
 
     setupWebcam = async () => {
         const node = this.cam.current;
@@ -67,8 +42,6 @@ export default class Home extends Component {
 
             this.setState({ items });
             this.setupWebcam();
-            this.knnLoad();
-            this.mobilenetLoad();
         } catch (e) {
             alert("error: " + e);
         }
