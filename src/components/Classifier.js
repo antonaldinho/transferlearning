@@ -6,7 +6,7 @@ import * as tf from '@tensorflow/tfjs';
 const classifier = knnClassifier.create();
 
 var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
-
+let net;
 
 export default class Classifier extends Component {
 
@@ -20,11 +20,11 @@ export default class Classifier extends Component {
     componentDidMount() {
         console.log('DidMount')
         this.knnLoad();
-        this.classify();
+        this.startC(); 
     }
 
-    sendData= () =>{
-        this.props.parentCallback(this.state.prediction);
+    sendData= (pred) =>{
+        this.props.parentCallback(pred);
     }
 
     knnLoad = () =>{
@@ -38,26 +38,27 @@ export default class Classifier extends Component {
         console.log(tensorObj);
     };
 
-     classify = async () =>{
-        let net = await mobilenet.load();
+     startC = async () =>{
+        net = await mobilenet.load();
         let vid =  await this.props.cam.current;
-        while (true) {
-            if (classifier.getNumClasses() > 0) {      
-                // Get the activation from mobilenet from the webcam.
-                const activation = net.infer(await this.props.cam.current, 'conv_preds');
-                // Get the most likely class and confidences from the classifier module.
-                const result = await classifier.predictClass(activation);                
-                const classes = ['Coca','Cafe','Coca light','Sabritas','Emperador'];
-                
-                if(result.confidences[result.label] > 0.7){
-                    this.setState({prediction: classes[result.label]});
-                    this.setState({probability: result.confidences[result.label]});
-                    this.sendData();
-                }
-                wait(10000);
-            }      
+        if (classifier.getNumClasses() > 0) {
+            this.classify()
         }
     };
+    classify = async () =>{
+        const activation = net.infer(await this.props.cam.current, 'conv_preds');
+        // Get the most likely class and confidences from the classifier module.
+        const result = await classifier.predictClass(activation);                
+        const classes = ['Coca','Cafe','Coca light','Sabritas','Emperador'];
+        if(result.confidences[result.label] > 0.7 && this.state.prediction != classes[result.label]){
+            this.setState({prediction: classes[result.label]});
+            this.sendData(classes[result.label]);
+            wait(50000);
+        }
+        requestAnimationFrame(() => {
+            this.classify();
+        });
+    }
 
     render(){
         return (
