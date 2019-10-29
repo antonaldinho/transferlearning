@@ -50,7 +50,8 @@ export default class Classifier extends Component {
         // Get the most likely class and confidences from the classifier module.
         const result = await classifier.predictClass(activation);                
         const classes = ['Coca','Cafe','Coca light','Sabritas','Emperador'];
-        if(result.confidences[result.label] > 0.7 && this.state.prediction != classes[result.label]){
+        if(result.confidences[result.label] > 0.7 && this.state.prediction != classes[result.label]
+            && result.label != 4){
             this.setState({prediction: classes[result.label]});
             this.sendData(classes[result.label]);
             wait(50000);
