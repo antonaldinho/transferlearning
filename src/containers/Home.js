@@ -182,27 +182,31 @@ export default class Home extends Component {
                     <canvas style={{display:'none'}} ref={this.canvas2} width="224" height="224" />
                 </div>
                 <div style={{width: '55%'}}>
-                    <PageHeader >Scan new product</PageHeader>
+                    <PageHeader>Scan new product</PageHeader>
                     <Classifier cam={this.cam} canvas={this.canvas} canvas2={this.canvas2} parentCallback={this.callbackFunction}></Classifier>
-                    <PageHeader >Shopping cart</PageHeader>
+                    <PageHeader>Shopping cart</PageHeader>
 
-                    <ListGroup >
+                    <ListGroup>
                         {!this.state.isLoading && this.renderItemsList(this.state.items)}
                     </ListGroup>
+
                     <Modal show={this.state.showModal} onHide={this.handleClose}>
-                    <Modal.Header closeButton>
-                        <Modal.Title>¿Agregar producto?</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>Nombre del producto: {this.state.productName}</Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={this.handleClose}>
-                            Close
-                        </Button>
-                        <Button variant="primary" onClick={this.handleSaveItem}>
-                            Save Changes
-                        </Button>
-                    </Modal.Footer>
+                        <Modal.Header closeButton>
+                            <Modal.Title>¿Agregar producto?</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>Nombre del producto: {this.state.productName}</Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={this.handleClose}>
+                                Close
+                            </Button>
+                            <Button variant="primary" onClick={this.handleSaveItem}>
+                                Save Changes
+                            </Button>
+                        </Modal.Footer>
                     </Modal>
+                    <Button variant="primary" onClick={this.handleShow}>
+                        Launch demo modal
+                    </Button>
                 </div>
             </div>
         );
