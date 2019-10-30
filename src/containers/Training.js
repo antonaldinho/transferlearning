@@ -33,7 +33,7 @@ export default class Training extends Component {
       // Data management
       classifier: knnClassifier.create(),
       counter: "",
-      count: [0, 0, 0, 0, 0],
+      count: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
       net: null
     };
   }
@@ -52,7 +52,7 @@ export default class Training extends Component {
         // Get the most likely class and confidences from the classifier module.
         let k = 10;
         const result = await this.state.classifier.predictClass(activation, k);
-        const classes = ["Coca", "Cafe", "Coca light", "Sabritas", "Emperador"];
+        const classes = ["Coca", "Coca lata", "Coca zero", "Sabritas", "Pepsi", "Donitas", "Krankys", "Emperador", "Jugo", "cafe","Fondo"];
 
         this.setState({
           consoleText: `Prediction: ${classes[result.label]}, Probability: ${
@@ -108,7 +108,7 @@ export default class Training extends Component {
     console.log("classId" + classId);
 
     // Capture an image from the web camera.
-    let className = ["Coca", "Cafe", "Coca light", "Sabritas", "Emperador"];
+    let className = ["Coca", "Coca lata", "Coca zero", "Sabritas", "Pepsi", "Donitas", "Krankys", "Emperador", "Jugo", "Cafe","Fondo"];
 
     this.setState({
       counter: `Class: ${className[classId]}, Counter: ${this.state.count[classId]}`
@@ -199,16 +199,34 @@ export default class Training extends Component {
                   Coca
                 </Button>
                 <Button id="class-b" onClick={() => this.addExample(1)}>
-                  Cafe
+                  Coca de lata
                 </Button>
                 <Button id="class-c" onClick={() => this.addExample(2)}>
-                  Coca light
+                  Coca zero
                 </Button>
                 <Button id="class-d" onClick={() => this.addExample(3)}>
                   Sabritas
                 </Button>
                 <Button id="class-e" onClick={() => this.addExample(4)}>
+                  Pepsi
+                </Button>
+                <Button id="class-f" onClick={() => this.addExample(5)}>
+                  Donitas
+                </Button>
+                <Button id="class-g" onClick={() => this.addExample(6)}>
+                  Krankys
+                </Button>
+                <Button id="class-h" onClick={() => this.addExample(7)}>
                   Emperador
+                </Button>
+                <Button id="class-i" onClick={() => this.addExample(8)}>
+                  Jugo
+                </Button>
+                <Button id="class-j" onClick={() => this.addExample(9)}>
+                  Cafe
+                </Button>
+                <Button id="class-k" onClick={() => this.addExample(10)}>
+                  Fondo
                 </Button>
               </ButtonToolbar>
             </Col>
