@@ -1,7 +1,14 @@
 import React, { Component } from "react";
-import { PageHeader, ListGroup, ListGroupItem } from "react-bootstrap";
+import { PageHeader, ListGroup, ListGroupItem, Modal, Button, Row, Col } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
+import "@tensorflow/tfjs";
 import "./Home.css";
+import Classifier from "../components/Classifier";
+const deleteButtonStyle = {
+    top: '50%',
+    left: '95%',
+    transform: 'translate(-50%, -50%)'
+}
 
 export default class Home extends Component {
     constructor(props) {
@@ -9,11 +16,17 @@ export default class Home extends Component {
 
         this.state = {
             isLoading: true,
-            items: []
+            items: [],
+            showModal: false,
+            productName: null,
+            productId: null
         };
         this.cam = React.createRef();
+        this.handleClose = this.handleClose.bind(this);
+        this.handleShow = this.handleShow.bind(this);
+        this.handleSaveItem = this.handleSaveItem.bind(this);
+        this.handleDeleteItemClick = this.handleDeleteItemClick.bind(this);
     }
-
 
     setupWebcam = async () => {
         const node = this.cam.current;
@@ -38,9 +51,9 @@ export default class Home extends Component {
     async componentDidMount() {
         try {
             // Extract saved json items
-            const items = this.getItems();
+            // const items = this.getItems();
 
-            this.setState({ items });
+            // this.setState({ items });
             this.setupWebcam();
         } catch (e) {
             alert("error: " + e);
@@ -49,30 +62,90 @@ export default class Home extends Component {
         this.setState({ isLoading: false });
     }
 
-    getItems() {
-        // Demo data change for real json generated.
-        return [
-            {
-                itemId: 1,
-                itemName: "Coca Cola",
-                itemQuantity: 1
-            },
-            {
-                itemId: 1,
-                itemName: "Pepsi",
+    callbackFunction = (childData) => {
+        console.log(childData); 
+        if (childData.className !== 'Emperador') {
+            this.setState({ productName: childData.className });
+            this.setState({ productId: childData.classId });
+            this.setState({ showModal: true });
+        }
+        //this.setState({productName: childData});
+    }
+
+    handleClose() {
+        this.setState({ showModal: false })
+    }
+
+    handleSaveItem() {
+        var includesItem = false;
+        const newItems = this.state.items.map(item => {
+            if (item.itemId === this.state.productId) {
+                item.itemQuantity = item.itemQuantity + 1;
+                includesItem = true;
+            }
+            return item;
+        })
+        if (includesItem) {
+            this.setState(newItems);
+        }
+        else {
+            let items = this.state.items;
+            const newItem = {
+                itemId: this.state.productId,
+                itemName: this.state.productName,
                 itemQuantity: 1
             }
-        ];
+            items.push(newItem);
+            this.setState({ items: items })
+        }
+        this.setState({ showModal: false })
     }
+    handleShow() {
+        this.setState({ showModal: true })
+    }
+    handleDeleteItemClick(event) {
+        const itemId = event.target.name;
+        const length = this.state.items.length;
+        let items = this.state.items;
+        for(let i = 0; i < length; i++) {
+            if(items[i].itemId === itemId) {
+                items.splice(i, 1);
+            }
+        }
+        console.log(items);
+        this.setState({items: items});
+    }
+
+    // getItems() {
+    //     // Demo data change for real json generated.
+    //     return [
+    //         {
+    //             itemId: 1,
+    //             itemName: "Coca Cola",
+    //             itemQuantity: 1
+    //         },
+    //         {
+    //             itemId: 1,
+    //             itemName: "Pepsi",
+    //             itemQuantity: 1
+    //         }
+    //     ];
+    // }
 
     renderItemsList(items) {
         return [{}].concat(items).map((item, i) =>
             i !== 0 ? (
-                <LinkContainer key={item.itemId} to={`/items/${item.itemId}`}>
-                    <ListGroupItem header={item.itemName.trim().split("\n")[0]}>
-                        {"Quantity: " + item.itemQuantity}
-                    </ListGroupItem>
-                </LinkContainer>
+                <ListGroupItem header={item.itemName.trim().split("\n")[0]}>
+                    <Row>
+                        <Col md={11}>
+                            {"Quantity: " + item.itemQuantity}
+                        </Col>
+                        <Col>
+                            <Button style={deleteButtonStyle} variant="danger" name={item.itemId} onClick={this.handleDeleteItemClick}>x</Button>
+                        </Col>
+                    </Row>
+                    
+                </ListGroupItem>
             ) : null
         );
     }
@@ -91,11 +164,31 @@ export default class Home extends Component {
             <div className="items">
                 <PageHeader>Scan new product</PageHeader>
                 <video ref={this.cam} autoPlay playsInline muted id="webcam" width="600" height="500" />
+                <Classifier cam={this.cam} parentCallback={this.callbackFunction}></Classifier>
                 <PageHeader>Shopping cart</PageHeader>
 
                 <ListGroup>
                     {!this.state.isLoading && this.renderItemsList(this.state.items)}
                 </ListGroup>
+
+                <Modal show={this.state.showModal} onHide={this.handleClose}>
+                    <Modal.Header closeButton>
+                        <Modal.Title>¿Agregar producto?</Modal.Title>
+                    </Modal.Header>
+                    <Modal.Body>Nombre del producto: {this.state.productName}</Modal.Body>
+                    <Modal.Footer>
+                        <Button variant="secondary" onClick={this.handleClose}>
+                            Close
+                        </Button>
+                        <Button variant="primary" onClick={this.handleSaveItem}>
+                            Save Changes
+                        </Button>
+                    </Modal.Footer>
+                </Modal>
+                <Button variant="primary" onClick={this.handleShow}>
+                    Launch demo modal
+                </Button>
+
             </div>
         );
     }
