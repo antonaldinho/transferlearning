@@ -65,10 +65,6 @@ export default class Home extends Component {
         this.setState({ isLoading: false });
     }
 
-    callbackFunction = (childData) => {
-      
-    }
-
     getItems() {
         // Demo data change for real json generated.
         return [
