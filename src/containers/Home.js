@@ -17,6 +17,11 @@ const recogStyle={
     alginContent: 'stretch',
     justifyContent: 'space-between'
 }
+const deleteButtonStyle = {
+    top: '50%',
+    left: '95%',
+    transform: 'translate(-50%, -50%)'
+}
 export default class Home extends Component {
     constructor(props) {
         super(props);
@@ -198,9 +203,6 @@ export default class Home extends Component {
                         </Button>
                     </Modal.Footer>
                     </Modal>
-                    <Button variant="primary" onClick={this.handleShow}>
-                        Launch demo modal
-                    </Button>
                 </div>
             </div>
         );
