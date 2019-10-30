@@ -141,6 +141,7 @@ export default class Classifier extends Component {
         if(classes[result.label] != this.state.prediction && result.label != 4 && result.confidences[result.label] > 0.5){
             this.setState({prediction:classes[result.label]});
             this.setState({probability: result.confidences[result.label]})
+            this.setState({classId: result.label});
             this.sendData();
             await wait(3000);
             this.setState({prediction: 'Waiting', probability: '-'})
