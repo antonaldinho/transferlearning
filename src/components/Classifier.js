@@ -15,6 +15,7 @@ export default class Classifier extends Component {
         super(props);
         this.state = {
             prediction : 'Waiting',
+            classId: null
         }
     }
 
@@ -24,8 +25,8 @@ export default class Classifier extends Component {
         this.mobilnetLoad();
     }
 
-    sendData= (pred) =>{
-        this.props.parentCallback(pred);
+    sendData= () =>{
+        this.props.parentCallback({className: this.state.prediction, classId: this.state.classId});
     }
 
     knnLoad = () =>{
