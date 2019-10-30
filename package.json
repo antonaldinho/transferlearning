@@ -17,7 +17,8 @@
     "react-stripe-elements": "^1.6.0",
     "react-webcam": "^3.1.1",
     "sweetalert": "^2.1.2",
-    "tfjs": "^0.6.0"
+    "tfjs": "^0.6.0",
+    "tfjsx": "^1.0.1"
   },
   "scripts": {
     "start": "react-scripts start",
