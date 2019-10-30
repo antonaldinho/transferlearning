@@ -6,10 +6,9 @@ import "./Home.css";
 import Classifier from "../components/Classifier";
 
 const camStyle={
-    position: 'absolute',
+    position: 'fixed',
+    top: '2px',
     left: '3px',
-    top: '10px',
-    marginLeft: '5px'
 }
 const recogStyle={
     display: 'flex',
@@ -78,11 +77,10 @@ export default class Home extends Component {
 
     callbackFunction = (childData) => {
         console.log(childData); 
-        if (childData.className !== 'Emperador') {
-            this.setState({ productName: childData.className });
-            this.setState({ productId: childData.classId });
-            this.setState({ showModal: true });
-        }
+        this.setState({ productName: childData.className });
+        this.setState({ productId: childData.classId });
+        this.setState({ showModal: true });
+    
         //this.setState({productName: childData});
     }
 
@@ -111,6 +109,7 @@ export default class Home extends Component {
             }
             items.push(newItem);
             this.setState({ items: items })
+            console.log(this.state.items);
         }
         this.setState({ showModal: false })
     }
@@ -121,12 +120,12 @@ export default class Home extends Component {
         const itemId = event.target.name;
         const length = this.state.items.length;
         let items = this.state.items;
+        console.log(items);
         for(let i = 0; i < length; i++) {
             if(items[i].itemId === itemId) {
                 items.splice(i, 1);
             }
         }
-        console.log(items);
         this.setState({items: items});
     }
 
@@ -177,8 +176,8 @@ export default class Home extends Component {
         return (
             <div className="items" style={recogStyle}>
                 <div className = "cam">
-                    <video style={camStyle} ref ={this.cam} autoPlay playsInline muted id="webcam" width="600" height="500"/>
-                    <canvas style={camStyle} ref={this.canvas} width="800" height="500" />
+                    <video style={camStyle} ref ={this.cam} autoPlay muted id="webcam" width="600" height="500"/>
+                    <canvas style={camStyle} ref={this.canvas} width="600" height="500" />
                     <canvas style={{display:'none'}} ref={this.canvas2} width="224" height="224" />
                 </div>
                 <div style={{width: '55%'}}>
@@ -204,9 +203,6 @@ export default class Home extends Component {
                             </Button>
                         </Modal.Footer>
                     </Modal>
-                    <Button variant="primary" onClick={this.handleShow}>
-                        Launch demo modal
-                    </Button>
                 </div>
             </div>
         );
