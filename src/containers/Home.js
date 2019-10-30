@@ -5,6 +5,18 @@ import "@tensorflow/tfjs";
 import "./Home.css";
 import Classifier from "../components/Classifier";
 
+const camStyle={
+    position: 'absolute',
+    left: '3px',
+    top: '10px',
+    marginLeft: '5px'
+}
+const recogStyle={
+    display: 'flex',
+    flexDirection: 'row',
+    alginContent: 'stretch',
+    justifyContent: 'space-between'
+}
 export default class Home extends Component {
     constructor(props) {
         super(props);
@@ -14,6 +26,9 @@ export default class Home extends Component {
             items: []
         };
         this.cam = React.createRef();
+        this.canvas = React.createRef();
+        this.canvas2 = React.createRef();
+
     }
 
     setupWebcam = async () => {
@@ -93,15 +108,21 @@ export default class Home extends Component {
 
     renderitems() {
         return (
-            <div className="items">
-                <PageHeader>Scan new product</PageHeader>
-                <video ref={this.cam} autoPlay playsInline muted id="webcam" width="600" height="500" />
-                <Classifier cam={this.cam} parentCallback={this.callbackFunction}></Classifier>
-                <PageHeader>Shopping cart</PageHeader>
+            <div className="items" style={recogStyle}>
+                <div className = "cam">
+                    <video style={camStyle} ref ={this.cam} autoPlay playsInline muted id="webcam" width="600" height="500"/>
+                    <canvas style={camStyle} ref={this.canvas} width="800" height="500" />
+                    <canvas style={{display:'none'}} ref={this.canvas2} width="224" height="224" />
+                </div>
+                <div style={{width: '55%'}}>
+                    <PageHeader >Scan new product</PageHeader>
+                    <Classifier cam={this.cam} canvas={this.canvas} canvas2={this.canvas2} parentCallback={this.callbackFunction}></Classifier>
+                    <PageHeader >Shopping cart</PageHeader>
 
-                <ListGroup>
-                    {!this.state.isLoading && this.renderItemsList(this.state.items)}
-                </ListGroup>
+                    <ListGroup >
+                        {!this.state.isLoading && this.renderItemsList(this.state.items)}
+                    </ListGroup>
+                </div>
             </div>
         );
     }
