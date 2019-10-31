@@ -42,7 +42,7 @@ export default class Training extends Component {
 
   async componentDidMount() {
     // Load the model.
-    this.setState({ isLoading: false, net: await mobilenet.load() });
+    this.setState({ isLoading: false, net: this.props.net });
 
     // Set up webcam
     this.setupWebcam();
@@ -158,7 +158,7 @@ export default class Training extends Component {
       datasetObj[key] = Array.from(data);
     });
     let jsonStr = JSON.stringify(datasetObj);
-    localStorage.setItem("knnClassifier", jsonStr);
+    //localStorage.setItem("knnClassifier", jsonStr);
 
     this.saveData(jsonStr, "knnClassifier.json");
   }
