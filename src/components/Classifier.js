@@ -1,8 +1,6 @@
 import React, {Component} from "react";
 import * as knnClassifier from '@tensorflow-models/knn-classifier';
-import * as mobilenet from '@tensorflow-models/mobilenet';
 import * as tf from '@tensorflow/tfjs';
-import * as cocoSSD from '@tensorflow-models/coco-ssd';
 
 const classifier = knnClassifier.create();
 
@@ -13,20 +11,29 @@ export default class Classifier extends Component {
 
     constructor(props) {
         super(props);
+        this.mounted = true;
         this.state = {
             prediction : 'Waiting',
             classId: null
         }
     }
 
-    componentDidMount() {
+    async componentDidMount() {
+        /*
         if(!localStorage.getItem('knnClassifier')){
             let jsonStr = JSON.stringify(require('./knnClassifier'));
-            localStorage.setItem("knnClassifier", jsonStr);
+            //localStorage.setItem("knnClassifier", jsonStr);
             console.log(jsonStr);
-        }
+        }*/
+        console.log(this.props);
         this.knnLoad();
-        this.mobilnetLoad();
+        let cam = this.props.cam.current;
+        cam.addEventListener('loadeddata', () =>{
+            this.detectFrame(cam, this.props.props.model, this.props.props.net);
+        })
+    }
+    componentWillUnmount(){
+        this.mounted = false;
     }
 
     sendData= () =>{
@@ -35,41 +42,29 @@ export default class Classifier extends Component {
 
     knnLoad = () =>{
         //can be change to other source
-        let tensorObj = JSON.parse(localStorage.getItem('knnClassifier'));
+        let tensorObj = require('./knnClassifier');
         Object.keys(tensorObj).forEach((key) => {
         tensorObj[key] = tf.tensor(tensorObj[key], [Math.floor(tensorObj[key].length / 1000), 1024]);
         });
         classifier.setClassifierDataset(tensorObj);
     };
-    mobilnetLoad=async ()=>{
-        console.log('Loading mobilenet..');
-        net = await mobilenet.load();
-        console.log('Sucessfully Mobilnet model');
-        this.loadModel(net);
-    }
-
-    loadModel= async (net) =>{
-        console.log('Loading SSD model..');
-        const model = await cocoSSD.load('mobilenet_v2');
-        console.log('Sucessfully SSD model');
-        this.detectFrame(this.props.cam.current,model, net);
-    }
-
 
     detectFrame =  (video, model, mobil) => {
-        model.detect(video).then(
-        predictions => {
-            //console.log(predictions);
-            this.transferLearning(video,mobil);
-            this.renderPredictions(predictions,mobil);
-            requestAnimationFrame(() => {
-                this.detectFrame(video, model);
-            });
-        });
+        if(video != undefined){
+            model.detect(video).then(
+                predictions => {
+                    //console.log(predictions);
+                    this.transferLearning(video,mobil);
+                    this.renderPredictions(predictions,mobil);
+                    requestAnimationFrame(() => {
+                        this.detectFrame(video, model);
+                    });
+                });
+        }
     }
 
     renderPredictions = (predictions,mobil) => {
-        if(this.props.canvas.current != null){
+        if(this.props.canvas.current && this.mounted){
             const ctx = this.props.canvas.current.getContext("2d");
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             const font = "24px helvetica";
@@ -133,8 +128,8 @@ export default class Classifier extends Component {
         
     }
     transferLearning=async(video,mobil)=>{
-        if(this.props.cam.current !== null){
-            const activation = net.infer(this.props.cam.current, 'conv_preds');
+        if(this.mounted){
+            const activation = this.props.props.net.infer(video, 'conv_preds');
             let k = 10;
             const result = await classifier.predictClass(activation,k);
             const classes = ["Coca", "Coca lata", "Coca zero", "Sabritas", "Pepsi", "Donitas", "Krankys", "Emperador", "Jugo", "cafe","Fondo"];
@@ -147,7 +142,6 @@ export default class Classifier extends Component {
                 this.setState({prediction: 'Waiting', probability: '-'})
             }
         }
-
     }
 
     render(){

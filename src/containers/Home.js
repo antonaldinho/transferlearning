@@ -203,6 +203,14 @@ export default class Home extends Component {
     }
 
     renderitems() {
+        let childProps = {
+            net: this.props.net,
+            model: this.props.model,
+            cam: this.cam,
+            canvas: this.canvas,
+            canvas2: this.canvas2
+        };
+        console.log(childProps);
         return (
             <div className="items" style={recogStyle}>
                 <div className = "cam" style={divStyle}>
@@ -212,7 +220,7 @@ export default class Home extends Component {
                 </div>
                 <div style={{width: '55%'}}>
                     <PageHeader>Scan new product</PageHeader>
-                    <Classifier cam={this.cam} canvas={this.canvas} canvas2={this.canvas2} parentCallback={this.callbackFunction}></Classifier>
+                    <Classifier cam={this.cam} canvas={this.canvas} canvas2={this.canvas2} props={childProps} parentCallback={this.callbackFunction}></Classifier>
                     <PageHeader>Shopping cart</PageHeader>
                     {'Total price: ' + this.state.totalPrice}
                     <ListGroup>
