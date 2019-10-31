@@ -21,6 +21,7 @@ const deleteButtonStyle = {
     left: '95%',
     transform: 'translate(-50%, -50%)'
 }
+const prices = [15, 8, 15, 16, 12, 18, 10, 13, 18, 20];
 export default class Home extends Component {
     constructor(props) {
         super(props);
@@ -30,7 +31,8 @@ export default class Home extends Component {
             items: [],
             showModal: false,
             productName: null,
-            productId: null
+            productId: null,
+            totalPrice: 0
         };
         this.cam = React.createRef();
         this.canvas = React.createRef();
@@ -39,6 +41,7 @@ export default class Home extends Component {
         this.handleShow = this.handleShow.bind(this);
         this.handleSaveItem = this.handleSaveItem.bind(this);
         this.handleDeleteItemClick = this.handleDeleteItemClick.bind(this);
+        this.calculatePrice = this.calculatePrice.bind(this);
     }
 
     setupWebcam = async () => {
@@ -81,6 +84,14 @@ export default class Home extends Component {
         this.setState({ isLoading: false });
     }
 
+    calculatePrice() {
+        let price = 0;
+        for(let i = 0; i < this.state.items.length; i++) {
+            price = price + this.state.items[i].itemQuantity * prices[this.state.items[i].itemId];
+        }
+        return price;
+    }
+
     callbackFunction = (childData) => {
         this.setState({ productName: childData.className });
         this.setState({ productId: childData.classId });
@@ -115,21 +126,23 @@ export default class Home extends Component {
             items.push(newItem);
             this.setState({ items: items })
         }
-        this.setState({ showModal: false })
+        const newPrice = this.calculatePrice();
+        this.setState({ showModal: false, totalPrice: newPrice })
     }
     handleShow() {
         this.setState({ showModal: true })
     }
-    handleDeleteItemClick(event) {
+    handleDeleteItemClick = async (event) => {
         const itemId = event.target.name;
-        const length = this.state.items.length;
         let items = this.state.items;
-        for(let i = 0; i < length; i++) {
+        for(let i = 0; i < this.state.items.length; i++) {
             if(items[i].itemId === itemId) {
                 items.splice(i, 1);
+                break;
             }
         }
-        this.setState({items: items});
+        const newPrice = this.calculatePrice();
+        this.setState({items: items, totalPrice: newPrice});
     }
 
     // getItems() {
@@ -154,7 +167,8 @@ export default class Home extends Component {
                 <ListGroupItem header={item.itemName.trim().split("\n")[0]}>
                     <Row>
                         <Col md={11}>
-                            {"Quantity: " + item.itemQuantity}
+                            {"Quantity: " + item.itemQuantity}{'\n'}
+                            {"Price: " + item.itemQuantity * prices[item.itemId]}
                         </Col>
                         <Col>
                             <Button style={deleteButtonStyle} variant="danger" name={item.itemId} onClick={this.handleDeleteItemClick}>x</Button>
@@ -187,7 +201,7 @@ export default class Home extends Component {
                     <PageHeader>Scan new product</PageHeader>
                     <Classifier cam={this.cam} canvas={this.canvas} canvas2={this.canvas2} parentCallback={this.callbackFunction}></Classifier>
                     <PageHeader>Shopping cart</PageHeader>
-
+                    {'Total price: ' + this.state.totalPrice}
                     <ListGroup>
                         {!this.state.isLoading && this.renderItemsList(this.state.items)}
                     </ListGroup>
