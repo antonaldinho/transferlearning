@@ -20,7 +20,6 @@ export default class Classifier extends Component {
     }
 
     componentDidMount() {
-        console.log('DidMount');
         if(!localStorage.getItem('knnClassifier')){
             let jsonStr = require('./knnClassifier.json');
             localStorage.setItem("knnClassifier", jsonStr);
@@ -38,10 +37,8 @@ export default class Classifier extends Component {
         let tensorObj = JSON.parse(localStorage.getItem('knnClassifier'));
         Object.keys(tensorObj).forEach((key) => {
         tensorObj[key] = tf.tensor(tensorObj[key], [Math.floor(tensorObj[key].length / 1000), 1024]);
-        console.log(Math.floor(tensorObj[key].length));
         });
         classifier.setClassifierDataset(tensorObj);
-        console.log(tensorObj);
     };
     mobilnetLoad=async ()=>{
         console.log('Loading mobilenet..');
@@ -54,7 +51,6 @@ export default class Classifier extends Component {
         console.log('Loading SSD model..');
         const model = await cocoSSD.load('mobilenet_v2');
         console.log('Sucessfully SSD model');
-        console.log(model);
         this.detectFrame(this.props.cam.current,model, net);
     }
 

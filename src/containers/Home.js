@@ -82,7 +82,6 @@ export default class Home extends Component {
     }
 
     callbackFunction = (childData) => {
-        console.log(childData); 
         this.setState({ productName: childData.className });
         this.setState({ productId: childData.classId });
         this.setState({ showModal: true });
@@ -115,7 +114,6 @@ export default class Home extends Component {
             }
             items.push(newItem);
             this.setState({ items: items })
-            console.log(this.state.items);
         }
         this.setState({ showModal: false })
     }
@@ -126,7 +124,6 @@ export default class Home extends Component {
         const itemId = event.target.name;
         const length = this.state.items.length;
         let items = this.state.items;
-        console.log(items);
         for(let i = 0; i < length; i++) {
             if(items[i].itemId === itemId) {
                 items.splice(i, 1);
