@@ -34,10 +34,8 @@ export default class Classifier extends Component {
         let tensorObj = require('./knnClassifier.json');
         Object.keys(tensorObj).forEach((key) => {
         tensorObj[key] = tf.tensor(tensorObj[key], [Math.floor(tensorObj[key].length / 1000), 1024]);
-        console.log(Math.floor(tensorObj[key].length));
         });
         classifier.setClassifierDataset(tensorObj);
-        console.log(tensorObj);
     };
     mobilnetLoad=async ()=>{
         console.log('Loading mobilenet..');
@@ -58,7 +56,6 @@ export default class Classifier extends Component {
     detectFrame =  (video, model, mobil) => {
         model.detect(video).then(
         predictions => {
-            console.log(predictions);
             this.transferLearning(this.props.cam.current,mobil);
             //this.renderPredictions(predictions,mobil);
             requestAnimationFrame(() => {
@@ -137,8 +134,7 @@ export default class Classifier extends Component {
         let k = 10;
         const result = await classifier.predictClass(activation,k);
         const classes = ['Coca','Cafe','Coca light','Sabritas','Emperador'];
-        console.log(result)
-        if(classes[result.label] != this.state.prediction && result.label != 4 && result.confidences[result.label] > 0.5){
+        if(classes[result.label] !== this.state.prediction && result.label !== 4 && result.confidences[result.label] > 0.5){
             this.setState({prediction:classes[result.label]});
             this.setState({probability: result.confidences[result.label]})
             this.setState({classId: result.label});
