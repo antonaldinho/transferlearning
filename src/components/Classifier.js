@@ -41,12 +41,14 @@ export default class Classifier extends Component {
     }
 
     knnLoad = () =>{
-        //can be change to other source
-        let tensorObj = require('./knnClassifier');
-        Object.keys(tensorObj).forEach((key) => {
-        tensorObj[key] = tf.tensor(tensorObj[key], [Math.floor(tensorObj[key].length / 1000), 1024]);
-        });
-        classifier.setClassifierDataset(tensorObj);
+        if (classifier.getNumClasses() == 0) {   
+            //can be change to other source
+            let tensorObj = require('./knnClassifier');
+            Object.keys(tensorObj).forEach((key) => {
+            tensorObj[key] = tf.tensor(tensorObj[key], [Math.floor(tensorObj[key].length / 1000), 1024]);
+            });
+            classifier.setClassifierDataset(tensorObj);
+        }
     };
 
     detectFrame =  (video, model, mobil) => {
