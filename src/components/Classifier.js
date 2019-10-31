@@ -21,9 +21,11 @@ export default class Classifier extends Component {
 
     componentDidMount() {
         console.log('DidMount');
-        if (classifier.getNumClasses() === 0) {
-            this.knnLoad();
+        if(!localStorage.getItem('knnClassifier')){
+            let jsonStr = require('./knnClassifier.json');
+            localStorage.setItem("knnClassifier", jsonStr);
         }
+        this.knnLoad();
         this.mobilnetLoad();
     }
 
@@ -33,7 +35,7 @@ export default class Classifier extends Component {
 
     knnLoad = () =>{
         //can be change to other source
-        let tensorObj = require('./knnClassifier.json');
+        let tensorObj = JSON.parse(localStorage.getItem('knnClassifier'));
         Object.keys(tensorObj).forEach((key) => {
         tensorObj[key] = tf.tensor(tensorObj[key], [Math.floor(tensorObj[key].length / 1000), 1024]);
         console.log(Math.floor(tensorObj[key].length));
