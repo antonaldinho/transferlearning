@@ -49,12 +49,18 @@ export default class Home extends Component {
                 navigatorAny.webkitGetUserMedia || navigatorAny.mozGetUserMedia ||
                 navigatorAny.msGetUserMedia;
             if (navigator.getUserMedia) {
-                navigator.getUserMedia({ video: true },
-                    stream => {
-                        node.srcObject = stream;
-                        node.addEventListener('loadeddata', () => resolve(), false);
-                    },
-                    error => reject());
+                try{
+                    navigator.getUserMedia({ video: true },
+                        stream => {
+                            node.srcObject = stream;
+                            node.addEventListener('loadeddata', () => resolve(), false);
+                        },
+                        error => reject())
+                }
+                catch(err){
+                    console.log(err);
+                }
+                
             } else {
                 reject();
             }
