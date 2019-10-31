@@ -24,6 +24,7 @@ export default class Training extends Component {
     super(props);
 
     this.cam = React.createRef();
+    this.mounted = true;
 
     this.state = {
       isLoading: true,
@@ -45,7 +46,7 @@ export default class Training extends Component {
     // Set up webcam
     this.setupWebcam();
 
-    while (true) {
+    while (true && this.mounted) {
       if (this.state.classifier.getNumClasses() > 0) {
         // Get the activation from mobilenet from the webcam.
         const activation = this.state.net.infer(this.cam.current, "conv_preds");
@@ -66,6 +67,10 @@ export default class Training extends Component {
       // fire.
       await tf.nextFrame();
     }
+  }
+
+  componentWillUnmount(){
+    this.mounted = false;
   }
 
   setupWebcam = async () => {
