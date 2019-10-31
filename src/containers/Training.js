@@ -16,8 +16,9 @@ import { LinkContainer } from "react-router-bootstrap";
 import * as mobilenet from "@tensorflow-models/mobilenet";
 import * as knnClassifier from "@tensorflow-models/knn-classifier";
 import * as tf from "@tensorflow/tfjs";
-
+import streamSaver from 'streamsaver'
 import "./Training.css";
+
 
 export default class Training extends Component {
   constructor(props) {
@@ -130,13 +131,21 @@ export default class Training extends Component {
   }
 
   saveData(content, name) {
-    var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(content);
-    var downloadAnchorNode = document.createElement("a");
-    downloadAnchorNode.setAttribute("href", dataStr);
-    downloadAnchorNode.setAttribute("download", name);
-    document.body.appendChild(downloadAnchorNode);
-    downloadAnchorNode.click();
-    downloadAnchorNode.remove();
+    var blob = new Blob([content], {type: "application/json"});
+    const fileStream = streamSaver.createWriteStream(name, {
+      size: blob.size // Makes the procentage visiable in the download
+    })
+    const readableStream = blob.stream()
+
+    // more optimized pipe version
+    // (Safari may have pipeTo but it's useless without the WritableStream)
+    if (window.WritableStream && readableStream.pipeTo) {
+      return readableStream.pipeTo(fileStream)
+        .then(() => console.log('done writing'))
+    }
+
+    // Write (pipe) manually
+    
   }
 
   save() {

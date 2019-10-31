@@ -18,6 +18,7 @@
     "react-webcam": "^3.1.1",
     "sweetalert": "^2.1.2",
     "tfjs": "^0.6.0",
+    "streamsaver": "^2.0.3",
     "tfjsx": "^1.0.1"
   },
   "scripts": {
