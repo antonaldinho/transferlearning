@@ -21,8 +21,9 @@ export default class Classifier extends Component {
 
     componentDidMount() {
         if(!localStorage.getItem('knnClassifier')){
-            let jsonStr = require('./knnClassifier.json');
+            let jsonStr = JSON.stringify(require('./knnClassifier'));
             localStorage.setItem("knnClassifier", jsonStr);
+            console.log(jsonStr);
         }
         this.knnLoad();
         this.mobilnetLoad();
