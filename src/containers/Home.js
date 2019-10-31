@@ -5,10 +5,16 @@ import "@tensorflow/tfjs";
 import "./Home.css";
 import Classifier from "../components/Classifier";
 
+const divStyle={
+    position: 'relative',
+    top: '0px',
+    left: '0px',
+}
+
 const camStyle={
-    position: 'fixed',
-    top: '2px',
-    left: '3px',
+    position: 'absolute',
+    top: '10px',
+    left: '5px',
 }
 const recogStyle={
     display: 'flex',
@@ -46,6 +52,13 @@ export default class Home extends Component {
 
     setupWebcam = async () => {
         const node = this.cam.current;
+        var vid_constraints = {
+            mandatory: {
+                maxHeight: 500,
+                maxWidth: 600
+            }
+        }
+        var constraints = { audio: false, video: vid_constraints };
         return new Promise((resolve, reject) => {
             const navigatorAny = navigator;
             navigator.getUserMedia = navigator.getUserMedia ||
@@ -53,7 +66,7 @@ export default class Home extends Component {
                 navigatorAny.msGetUserMedia;
             if (navigator.getUserMedia) {
                 try{
-                    navigator.getUserMedia({ video: true },
+                    navigator.getUserMedia(constraints,
                         stream => {
                             node.srcObject = stream;
                             node.addEventListener('loadeddata', () => resolve(), false);
@@ -192,8 +205,8 @@ export default class Home extends Component {
     renderitems() {
         return (
             <div className="items" style={recogStyle}>
-                <div className = "cam">
-                    <video style={camStyle} ref ={this.cam} autoPlay muted id="webcam" width="600" height="500"/>
+                <div className = "cam" style={divStyle}>
+                    <video style={camStyle} ref ={this.cam} autoPlay muted id="webcam"/>
                     <canvas style={camStyle} ref={this.canvas} width="600" height="500" />
                     <canvas style={{display:'none'}} ref={this.canvas2} width="224" height="224" />
                 </div>
