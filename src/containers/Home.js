@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { PageHeader, ListGroup, ListGroupItem, Modal, Button, Row, Col } from "react-bootstrap";
+import { PageHeader, ListGroup, ListGroupItem, Modal, Button, Row, Col, Grid } from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
 import "@tensorflow/tfjs";
 import "./Home.css";
@@ -212,36 +212,40 @@ export default class Home extends Component {
         };
         console.log(childProps);
         return (
-            <div className="items" style={recogStyle}>
-                <div className = "cam" style={divStyle}>
-                    <video style={camStyle} ref ={this.cam} autoPlay muted id="webcam"/>
-                    <canvas style={camStyle} ref={this.canvas} width="600" height="500" />
-                    <canvas style={{display:'none'}} ref={this.canvas2} width="224" height="224" />
-                </div>
-                <div style={{width: '55%'}}>
-                    <PageHeader>Scan new product</PageHeader>
-                    <Classifier cam={this.cam} canvas={this.canvas} canvas2={this.canvas2} props={childProps} parentCallback={this.callbackFunction}></Classifier>
-                    <PageHeader>Shopping cart</PageHeader>
-                    {'Total price: ' + this.state.totalPrice}
-                    <ListGroup>
-                        {!this.state.isLoading && this.renderItemsList(this.state.items)}
-                    </ListGroup>
+            <div>
+            <Grid className="items" >
+                <Row>
+                    <Col className = "cam" xs={12} md={7} style={divStyle}>
+                        <video style={camStyle} ref ={this.cam} autoPlay muted id="webcam"/>
+                        <canvas style={camStyle} ref={this.canvas} width="600" height="500" />
+                        <canvas style={{display:'none'}} ref={this.canvas2} width="224" height="224" />
+                    </Col>
+                    <Col xs={6} md={5}>
+                        <PageHeader>Scan new product</PageHeader>
+                        <Classifier cam={this.cam} canvas={this.canvas} canvas2={this.canvas2} props={childProps} parentCallback={this.callbackFunction}></Classifier>
+                        <PageHeader>Shopping cart</PageHeader>
+                        {'Total price: ' + this.state.totalPrice}
+                        <ListGroup>
+                            {!this.state.isLoading && this.renderItemsList(this.state.items)}
+                        </ListGroup>
 
-                    <Modal show={this.state.showModal} onHide={this.handleClose}>
-                        <Modal.Header closeButton>
-                            <Modal.Title>¿Agregar producto?</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>Nombre del producto: {this.state.productName}</Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={this.handleClose}>
-                                Close
-                            </Button>
-                            <Button variant="primary" onClick={this.handleSaveItem}>
-                                Save Changes
-                            </Button>
-                        </Modal.Footer>
-                    </Modal>
-                </div>
+                        <Modal show={this.state.showModal} onHide={this.handleClose}>
+                            <Modal.Header closeButton>
+                                <Modal.Title>¿Agregar producto?</Modal.Title>
+                            </Modal.Header>
+                            <Modal.Body>Nombre del producto: {this.state.productName}</Modal.Body>
+                            <Modal.Footer>
+                                <Button variant="secondary" onClick={this.handleClose}>
+                                    Close
+                                </Button>
+                                <Button variant="primary" onClick={this.handleSaveItem}>
+                                    Save Changes
+                                </Button>
+                            </Modal.Footer>
+                        </Modal>
+                    </Col>
+                </Row> 
+            </Grid>
             </div>
         );
     }
