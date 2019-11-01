@@ -35,6 +35,7 @@ const deleteButtonStyle = {
   left: "95%",
   transform: "translate(-50%, -50%)"
 };
+var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
 const prices = [15, 8, 15, 16, 12, 18, 10, 13, 18, 20];
 export default class Home extends Component {
   constructor(props) {
@@ -46,7 +47,8 @@ export default class Home extends Component {
       showModal: false,
       productName: null,
       productId: null,
-      totalPrice: 0
+      totalPrice: 0,
+      waitingForNewItem: true
     };
     this.cam = React.createRef();
     this.canvas = React.createRef();
@@ -114,18 +116,22 @@ export default class Home extends Component {
   }
 
   callbackFunction = childData => {
-    this.setState({ productName: childData.className });
-    this.setState({ productId: childData.classId });
-    this.setState({ showModal: true });
+    if (this.state.showModal !== true && this.state.waitingForNewItem === true) {
+      this.setState({ productName: childData.className });
+      this.setState({ productId: childData.classId });
+      this.setState({ showModal: true });
+    }
 
     //this.setState({productName: childData});
   };
 
-  handleClose() {
-    this.setState({ showModal: false });
+  handleClose = async() => {
+    this.setState({ showModal: false, waitingForNewItem: false });
+    await wait(1000);
+    this.setState({waitingForNewItem: true})
   }
 
-  handleSaveItem() {
+  handleSaveItem = async() => {
     var includesItem = false;
     const newItems = this.state.items.map(item => {
       if (item.itemId === this.state.productId) {
@@ -147,7 +153,9 @@ export default class Home extends Component {
       this.setState({ items: items });
     }
     const newPrice = this.calculatePrice();
-    this.setState({ showModal: false, totalPrice: newPrice });
+    this.setState({ showModal: false, totalPrice: newPrice, waitingForNewItem: false });
+    await wait(1000);
+    this.setState({waitingForNewItem: true})
   }
 
   handleShow() {
@@ -266,10 +274,10 @@ export default class Home extends Component {
           </Modal.Header>
           <Modal.Body>Nombre del producto: {this.state.productName}</Modal.Body>
           <Modal.Footer>
-            <Button variant="secondary" onClick={this.handleClose}>
+            <Button bsStyle="primary" onClick={this.handleClose}>
               Close
             </Button>
-            <Button variant="primary" onClick={this.handleSaveItem}>
+            <Button bsStyle="success" onClick={this.handleSaveItem}>
               Save Changes
             </Button>
           </Modal.Footer>
