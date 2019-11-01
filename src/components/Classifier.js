@@ -6,12 +6,13 @@ const classifier = knnClassifier.create();
 
 var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
 let c;
-let net;
+let last;
 export default class Classifier extends Component {
 
     constructor(props) {
         super(props);
         this.mounted = true;
+        this.count = 0;
         this.state = {
             prediction : 'Waiting',
             classId: null
@@ -129,13 +130,25 @@ export default class Classifier extends Component {
         }
         
     }
+    verifyClass = (value) => {
+        if(value == last){
+            this.count++;
+            last = value;
+        }
+        else{
+            this.count = 0;
+            last = value;
+        }
+    }
+
     transferLearning=async(video,mobil)=>{
         if(this.mounted){
             const activation = this.props.props.net.infer(video, 'conv_preds');
             let k = 10;
             const result = await classifier.predictClass(activation,k);
             const classes = ["Coca", "Coca lata", "Coca zero", "Sabritas", "Pepsi", "Donitas", "Krankys", "Emperador", "Jugo", "cafe","Fondo"];
-            if(classes[result.label] != this.state.prediction && result.label != 10 && result.confidences[result.label] > 0.3){
+            this.verifyClass(classes[result.label]);
+            if(this.count > 12 && result.label != 10 && result.confidences[result.label] > 0.3){
                 this.setState({prediction:classes[result.label]});
                 this.setState({probability: result.confidences[result.label]})
                 this.setState({classId: result.label});
