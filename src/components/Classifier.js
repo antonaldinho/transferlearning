@@ -148,7 +148,7 @@ export default class Classifier extends Component {
             const result = await classifier.predictClass(activation,k);
             const classes = ["Coca", "Coca lata", "Coca zero", "Sabritas", "Pepsi", "Donitas", "Krankys", "Emperador", "Jugo", "cafe","Fondo"];
             this.verifyClass(classes[result.label]);
-            if(this.count > 12 && result.label != 10 && result.confidences[result.label] > 0.3){
+            if(this.count > 12 && result.label != 10 && result.confidences[result.label] > 0.5){
                 this.setState({prediction:classes[result.label]});
                 this.setState({probability: result.confidences[result.label]})
                 this.setState({classId: result.label});
