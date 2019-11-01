@@ -210,7 +210,6 @@ export default class Home extends Component {
             canvas: this.canvas,
             canvas2: this.canvas2
         };
-        console.log(childProps);
         return (
             <div>
             <Grid className="items" >
