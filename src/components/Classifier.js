@@ -6,12 +6,13 @@ const classifier = knnClassifier.create();
 
 var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
 let c;
-let net;
+let last;
 export default class Classifier extends Component {
 
     constructor(props) {
         super(props);
         this.mounted = true;
+        this.count = 0;
         this.state = {
             prediction : 'Waiting',
             classId: null
@@ -25,7 +26,7 @@ export default class Classifier extends Component {
             //localStorage.setItem("knnClassifier", jsonStr);
             console.log(jsonStr);
         }*/
-        console.log(this.props);
+        //console.log(this.props);
         this.knnLoad();
         let cam = this.props.cam.current;
         cam.addEventListener('loadeddata', () =>{
@@ -45,7 +46,7 @@ export default class Classifier extends Component {
             //can be change to other source
             let tensorObj = require('./knnClassifier');
             Object.keys(tensorObj).forEach((key) => {
-            tensorObj[key] = tf.tensor(tensorObj[key], [Math.floor(tensorObj[key].length / 1000), 1024]);
+            tensorObj[key] = tf.tensor(tensorObj[key], [Math.floor(tensorObj[key].length / 1024), 1024]);
             });
             classifier.setClassifierDataset(tensorObj);
         }
@@ -56,7 +57,6 @@ export default class Classifier extends Component {
             model.detect(video).then(
                 predictions => {
                     //console.log(predictions);
-                    this.transferLearning(video,mobil);
                     this.renderPredictions(predictions,mobil);
                     requestAnimationFrame(() => {
                         this.detectFrame(video, model);
@@ -68,6 +68,7 @@ export default class Classifier extends Component {
     renderPredictions = (predictions,mobil) => {
         if(this.props.canvas.current && this.mounted){
             const ctx = this.props.canvas.current.getContext("2d");
+            const ctx2 = this.props.canvas2.current.getContext("2d");
             ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
             const font = "24px helvetica";
             ctx.font = font;
@@ -79,6 +80,12 @@ export default class Classifier extends Component {
                 const width = prediction.bbox[2];
                 const height = prediction.bbox[3];
                 if((prediction.class=='bottle')&&(prediction.score >=0.30)){
+
+                    ctx2.drawImage(this.props.cam.current,x,y,width,height,0,0,224,224); //cuadrante 
+                    c = ctx2.getImageData(0,0,224,224);
+                    this.transferLearning(c,mobil, "bottle");
+
+
                     //this.transferLearning(c,mobil);
             
                     // Draw the bounding box.
@@ -88,7 +95,7 @@ export default class Classifier extends Component {
             
                     // Draw the label background.
                     ctx.fillStyle = "#2fff00";
-                    const textWidth = ctx.measureText(this.state.text).width;
+                    const textWidth = ctx.measureText(prediction.class).width;
                     const textHeight = parseInt(font, 10);
             
                     // draw top left rectangle
@@ -99,10 +106,11 @@ export default class Classifier extends Component {
 
                     // Draw the text last to ensure it's on top.
                     ctx.fillStyle = "#000000";
-                    ctx.fillText(this.state.text, x, y);
+                    ctx.fillText(prediction.class, x, y);
                     ctx.fillText(prediction.score.toFixed(2), x, y + height - textHeight);
                 }
-                else if(prediction.class !='bottle'){
+                else{
+                    this.transferLearning(this.props.cam.current,mobil, '');
                     // Draw the bounding box.
                     ctx.strokeStyle = "#0984e3";
                     ctx.lineWidth = 1.5;
@@ -129,13 +137,32 @@ export default class Classifier extends Component {
         }
         
     }
-    transferLearning=async(video,mobil)=>{
+    verifyClass = (value) => {
+        if(value == last){
+            this.count++;
+            last = value;
+        }
+        else{
+            this.count = 1;
+            last = value;
+        }
+    }
+
+    transferLearning=async(video,mobil, label)=>{
+        let confidence = 0.6; 
+        let cont = 5;
+        if(label == "bottle"){
+            confidence = 0.5;
+            cont = 1;
+        }
         if(this.mounted){
             const activation = this.props.props.net.infer(video, 'conv_preds');
             let k = 10;
             const result = await classifier.predictClass(activation,k);
             const classes = ["Coca", "Coca lata", "Coca zero", "Sabritas", "Pepsi", "Donitas", "Krankys", "Emperador", "Jugo", "cafe","Fondo"];
-            if(classes[result.label] != this.state.prediction && result.label != 10 && result.confidences[result.label] > 0.3){
+            //console.log(classes[result.label] + " " + result.confidences[result.label] + " " + label);
+            this.verifyClass(classes[result.label]);
+            if(this.count > cont  && result.label != 10 && result.confidences[result.label] > confidence){
                 this.setState({prediction:classes[result.label]});
                 this.setState({probability: result.confidences[result.label]})
                 this.setState({classId: result.label});

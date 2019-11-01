@@ -175,7 +175,7 @@ export default class Home extends Component {
     this.setState({ items: items, totalPrice: newPrice });
   };
 
-  renderItemsList(items) {
+renderItemsList(items) {
     return [{}].concat(items).map((item, i) =>
       i !== 0 ? (
         <ListGroupItem header={item.itemName.trim().split("\n")[0]}>
@@ -209,7 +209,6 @@ export default class Home extends Component {
       </div>
     );
   }
-
   renderitems() {
     let childProps = {
       net: this.props.net,
@@ -224,49 +223,24 @@ export default class Home extends Component {
         <PageHeader>Scan new product</PageHeader>
 
         {/** Camera section */}
-
-        <Grid>
-          <Row className="show-grid">
-            <Col style={{ padding: 0 }} xs={12} md={8}>
-              <div className="cam" style={divStyle}>
-                <video ref={this.cam} autoPlay muted id="webcam" />
-                <canvas
-                  style={{ display: "none" }}
-                  ref={this.canvas}
-                  width="600"
-                  height="500"
-                />
-                <canvas
-                  style={{ display: "none" }}
-                  ref={this.canvas2}
-                  width="224"
-                  height="224"
-                />
-              </div>
-              <Classifier
-                cam={this.cam}
-                canvas={this.canvas}
-                canvas2={this.canvas2}
-                props={childProps}
-                parentCallback={this.callbackFunction}
-              ></Classifier>
-            </Col>
-          </Row>
-
-          {/** Shopping cart */}
-          <Row className="show-grid">
-            <Col style={{ padding: 0 }} xs={12} md={8}>
-              <PageHeader>Shopping cart</PageHeader>
-              {"Total price: " + this.state.totalPrice}
-
-              <ListGroup>
-                {!this.state.isLoading &&
-                  this.renderItemsList(this.state.items)}
-              </ListGroup>
-            </Col>
-          </Row>
-        </Grid>
-
+            <Grid className="items" >
+                <Row>
+                    <Col className = "cam" xs={12} md={7} style={divStyle}>
+                        <video style={camStyle} ref ={this.cam} autoPlay muted id="webcam"/>
+                        <canvas style={camStyle} ref={this.canvas} width="600" height="500" />
+                        <canvas style={{display:'none'}} ref={this.canvas2} width="224" height="224" />
+                    </Col>
+                    <Col xs={6} md={5}>
+                        <PageHeader>Scan new product</PageHeader>
+                        <Classifier cam={this.cam} canvas={this.canvas} canvas2={this.canvas2} props={childProps} parentCallback={this.callbackFunction}></Classifier>
+                        <PageHeader>Shopping cart</PageHeader>
+                        {'Total price: ' + this.state.totalPrice}
+                        <ListGroup>
+                            {!this.state.isLoading && this.renderItemsList(this.state.items)}
+                        </ListGroup>
+                    </Col>
+                </Row> 
+            </Grid>
         {/** Modal section */}
         <Modal show={this.state.showModal} onHide={this.handleClose}>
           <Modal.Header closeButton>
