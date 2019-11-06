@@ -1,24 +1,103 @@
 import React, { Component } from "react";
-import { PageHeader, ListGroup, ListGroupItem } from "react-bootstrap";
+import {
+  PageHeader,
+  ListGroup,
+  ListGroupItem,
+  Modal,
+  Button,
+  Row,
+  Col,
+  Grid
+} from "react-bootstrap";
 import { LinkContainer } from "react-router-bootstrap";
+import "@tensorflow/tfjs";
 import "./Home.css";
+import Classifier from "../components/Classifier";
 
+const divStyle = {
+  position: "relative",
+  top: "0px",
+  left: "0px"
+};
+const camStyle = {
+  position: "absolute",
+  top: "10px",
+  left: "5px"
+};
+const recogStyle = {
+  display: "flex",
+  flexDirection: "row",
+  alginContent: "stretch",
+  justifyContent: "space-between"
+};
+const deleteButtonStyle = {
+  top: "50%",
+  left: "95%",
+  transform: "translate(-50%, -50%)"
+};
+var wait = ms => new Promise((r, j)=>setTimeout(r, ms));
+const prices = [15, 8, 15, 16, 12, 18, 10, 13, 18, 20];
 export default class Home extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
       isLoading: true,
-      items: []
+      items: [],
+      showModal: false,
+      productName: null,
+      productId: null,
+      totalPrice: 0,
+      waitingForNewItem: true
     };
+    this.cam = React.createRef();
+    this.canvas = React.createRef();
+    this.canvas2 = React.createRef();
+    this.handleClose = this.handleClose.bind(this);
+    this.handleShow = this.handleShow.bind(this);
+    this.handleSaveItem = this.handleSaveItem.bind(this);
+    this.handleDeleteItemClick = this.handleDeleteItemClick.bind(this);
+    this.calculatePrice = this.calculatePrice.bind(this);
   }
+
+  setupWebcam = async () => {
+    const node = this.cam.current;
+    var vid_constraints = {
+      mandatory: {
+        maxHeight: 500,
+        maxWidth: 600
+      }
+    };
+    var constraints = { audio: false, video: vid_constraints };
+    return new Promise((resolve, reject) => {
+      const navigatorAny = navigator;
+      navigator.getUserMedia =
+        navigator.getUserMedia ||
+        navigatorAny.webkitGetUserMedia ||
+        navigatorAny.mozGetUserMedia ||
+        navigatorAny.msGetUserMedia;
+      if (navigator.getUserMedia) {
+        try {
+          navigator.getUserMedia(
+            constraints,
+            stream => {
+              node.srcObject = stream;
+              node.addEventListener("loadeddata", () => resolve(), false);
+            },
+            error => reject()
+          );
+        } catch (err) {
+          console.log(err);
+        }
+      } else {
+        reject();
+      }
+    });
+  };
 
   async componentDidMount() {
     try {
-      // Extract saved json items
-      const items = this.getItems();
-
-      this.setState({ items });
+      this.setupWebcam();
     } catch (e) {
       alert("error: " + e);
     }
@@ -26,30 +105,98 @@ export default class Home extends Component {
     this.setState({ isLoading: false });
   }
 
-  getItems() {
-    // Demo data change for real json generated.
-    return [
-      {
-        itemId: 1,
-        itemName: "Coca Cola",
-        itemQuantity: 1
-      },
-      {
-        itemId: 1,
-        itemName: "Pepsi",
-        itemQuantity: 1
-      }
-    ];
+  calculatePrice() {
+    let price = 0;
+    for (let i = 0; i < this.state.items.length; i++) {
+      price =
+        price +
+        this.state.items[i].itemQuantity * prices[this.state.items[i].itemId];
+    }
+    return price;
   }
 
-  renderItemsList(items) {
+  callbackFunction = childData => {
+    if (this.state.showModal !== true && this.state.waitingForNewItem === true) {
+      this.setState({ productName: childData.className });
+      this.setState({ productId: childData.classId });
+      this.setState({ showModal: true });
+    }
+
+    //this.setState({productName: childData});
+  };
+
+  handleClose = async() => {
+    this.setState({ showModal: false, waitingForNewItem: false });
+    await wait(1000);
+    this.setState({waitingForNewItem: true})
+  }
+
+  handleSaveItem = async() => {
+    var includesItem = false;
+    const newItems = this.state.items.map(item => {
+      if (item.itemId === this.state.productId) {
+        item.itemQuantity = item.itemQuantity + 1;
+        includesItem = true;
+      }
+      return item;
+    });
+    if (includesItem) {
+      this.setState(newItems);
+    } else {
+      let items = this.state.items;
+      const newItem = {
+        itemId: this.state.productId,
+        itemName: this.state.productName,
+        itemQuantity: 1
+      };
+      items.push(newItem);
+      this.setState({ items: items });
+    }
+    const newPrice = this.calculatePrice();
+    this.setState({ showModal: false, totalPrice: newPrice, waitingForNewItem: false });
+    await wait(1000);
+    this.setState({waitingForNewItem: true})
+  }
+
+  handleShow() {
+    this.setState({ showModal: true });
+  }
+
+  handleDeleteItemClick = async event => {
+    const itemId = event.target.name;
+    let items = this.state.items;
+    for (let i = 0; i < this.state.items.length; i++) {
+      if (items[i].itemId === itemId) {
+        items.splice(i, 1);
+        break;
+      }
+    }
+    const newPrice = this.calculatePrice();
+    this.setState({ items: items, totalPrice: newPrice });
+  };
+
+renderItemsList(items) {
     return [{}].concat(items).map((item, i) =>
       i !== 0 ? (
-        <LinkContainer key={item.itemId} to={`/items/${item.itemId}`}>
-          <ListGroupItem header={item.itemName.trim().split("\n")[0]}>
-            {"Quantity: " + item.itemQuantity}
-          </ListGroupItem>
-        </LinkContainer>
+        <ListGroupItem header={item.itemName.trim().split("\n")[0]}>
+          <Row>
+            <Col md={11}>
+              {"Quantity: " + item.itemQuantity}
+              {"\n"}
+              {"Price: " + item.itemQuantity * prices[item.itemId]}
+            </Col>
+            <Col>
+              <Button
+                style={deleteButtonStyle}
+                variant="danger"
+                name={item.itemId}
+                onClick={this.handleDeleteItemClick}
+              >
+                x
+              </Button>
+            </Col>
+          </Row>
+        </ListGroupItem>
       ) : null
     );
   }
@@ -62,17 +209,53 @@ export default class Home extends Component {
       </div>
     );
   }
-
   renderitems() {
+    let childProps = {
+      net: this.props.net,
+      model: this.props.model,
+      cam: this.cam,
+      canvas: this.canvas,
+      canvas2: this.canvas2
+    };
+    console.log(childProps);
     return (
       <div className="items">
         <PageHeader>Scan new product</PageHeader>
 
-        <PageHeader>Shopping cart</PageHeader>
-
-        <ListGroup>
-          {!this.state.isLoading && this.renderItemsList(this.state.items)}
-        </ListGroup>
+        {/** Camera section */}
+            <Grid className="items" >
+                <Row>
+                    <Col className = "cam" xs={12} md={7} style={divStyle}>
+                        <video style={camStyle} ref ={this.cam} autoPlay muted id="webcam"/>
+                        <canvas style={camStyle} ref={this.canvas} width="600" height="500" />
+                        <canvas style={{display:'none'}} ref={this.canvas2} width="224" height="224" />
+                    </Col>
+                    <Col xs={6} md={5}>
+                        <PageHeader>Scan new product</PageHeader>
+                        <Classifier cam={this.cam} canvas={this.canvas} canvas2={this.canvas2} props={childProps} parentCallback={this.callbackFunction}></Classifier>
+                        <PageHeader>Shopping cart</PageHeader>
+                        {'Total price: ' + this.state.totalPrice}
+                        <ListGroup>
+                            {!this.state.isLoading && this.renderItemsList(this.state.items)}
+                        </ListGroup>
+                    </Col>
+                </Row> 
+            </Grid>
+        {/** Modal section */}
+        <Modal show={this.state.showModal} onHide={this.handleClose}>
+          <Modal.Header closeButton>
+            <Modal.Title>¿Agregar producto?</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>Nombre del producto: {this.state.productName}</Modal.Body>
+          <Modal.Footer>
+            <Button bsStyle="primary" onClick={this.handleClose}>
+              Close
+            </Button>
+            <Button bsStyle="success" onClick={this.handleSaveItem}>
+              Save Changes
+            </Button>
+          </Modal.Footer>
+        </Modal>
       </div>
     );
   }

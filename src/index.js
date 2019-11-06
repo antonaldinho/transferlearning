@@ -5,6 +5,10 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 import "./index.css";
 
+window.onunload = function () {
+    window.localStorage.removeItem('knnClassifier');
+};
+
 ReactDOM.render(
   <Router>
     <App />
